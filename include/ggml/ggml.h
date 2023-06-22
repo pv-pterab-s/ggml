@@ -251,6 +251,7 @@ extern "C" {
         GGML_BACKEND_CPU = 0,
         GGML_BACKEND_CUDA = 1,
         GGML_BACKEND_CL = 2,
+        GGML_BACKEND_ONEAPI = 3
     };
 
     // model file types

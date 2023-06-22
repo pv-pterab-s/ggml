@@ -147,6 +147,8 @@ inline static void* ggml_aligned_malloc(size_t size) {
 #include "ggml-cuda.h"
 #elif defined(GGML_USE_CLBLAST)
 #include "ggml-opencl.h"
+#elif defined(GGML_USE_ONEAPI)
+#include "ggml-oneapi.h"
 #endif
 
 #undef MIN
@@ -3996,6 +3998,8 @@ struct ggml_context * ggml_init(struct ggml_init_params params) {
         ggml_init_cublas();
 #elif defined(GGML_USE_CLBLAST)
         ggml_cl_init();
+#elif defined(GGML_USE_ONEAPI)
+        ggml_init_oneapi();
 #endif
 
         is_first_call = false;

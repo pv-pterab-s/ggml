@@ -24,6 +24,12 @@ if (NOT MSVC)
     #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-math-errno -ffinite-math-only -funsafe-math-optimizations")
 endif()
 
+if (GGML_USE_ONEAPI)
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl -qmkl")
+endif()
+
 message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 
 if (NOT UNAME_S)
@@ -200,7 +206,11 @@ if (GGML_CUBLAS)
         message(WARNING "cuBLAS not found")
     endif()
 endif()
-
+if (GGML_USE_ONEAPI)
+    add_compile_definitions(GGML_USE_ONEAPI)
+    set(GGML_ONEAPI_SOURCES ggml-oneapi.cpp ggml-oneapi.h)
+    set(GGML_EXTRA_LIBS ${GGML_EXTRA_LIBS} -fsycl -qmkl)
+endif()
 
 if (GGML_PERF)
     set(GGML_EXTRA_FLAGS ${GGML_EXTRA_FLAGS} -DGGML_PERF)
@@ -210,7 +220,8 @@ add_library(${TARGET}
     ggml.c
     ../include/ggml/ggml.h
     ${GGML_CUDA_SOURCES}
-    ${GGML_OPENCL_SOURCES})
+    ${GGML_OPENCL_SOURCES}
+    ${GGML_ONEAPI_SOURCES})
 
 target_include_directories(${TARGET} PUBLIC
     .
@@ -256,6 +267,10 @@ if (GGML_CUDA_SOURCES)
     set_property(TARGET ggml  PROPERTY CUDA_ARCHITECTURES OFF)
     set_property(TARGET ggml  PROPERTY CUDA_SELECT_NVCC_ARCH_FLAGS "Auto")
     target_link_libraries(ggml PUBLIC stdc++)
+endif()
+
+if (GGML_ONEAPI_SOURCES)
+    message(STATUS "GGML oneAPI sources found, configuring oneAPI")
 endif()
 
 install(TARGETS ${TARGET}
